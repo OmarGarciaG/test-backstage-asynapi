@@ -210,7 +210,8 @@ components:
           description: Time of authorization
   securitySchemes:
     saslScram:
-      type: scramSha256
+      type: userPassword
+      x-mechanism: scram-sha-256
       description: Provide your username and password for SASL/SCRAM
     certs:
       type: X509
