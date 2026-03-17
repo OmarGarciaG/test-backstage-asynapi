@@ -1,0 +1,226 @@
+asyncapi: 3.0.0
+info:
+  title: FFSS Account Aggregation API
+  version: 1.0.0
+  description: |-
+    ### This API allows Spin to be notified of the different block and unblock operations, performed by provider, to be assigned to account for their customers.
+  contact:
+    name: Spin Platform Team
+    email: platform@spin.com
+    url: https://spin.com
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0
+  tags:
+    - name: accounts
+      description: Account management operations
+defaultContentType: application/json
+servers:
+  spin-msk:
+    host: boot-m0mjubox.c1.kafka-serverless.us-east-1.amazonaws.com:9098
+    protocol: kafka
+    description: Spin MSK broker secured with AWS_IAM/scramSha256
+    security:
+      - $ref: '#/components/securitySchemes/saslScram'
+    tags:
+      - name: auth:AWS_IAM
+        description: This resource is protected by AWS IAM.
+      - name: kind:remote
+        description: This server is a remote server. Not exposed by the application.
+      - name: visibility:private
+        description: This resource is private and only available to certain users
+channels:
+  providerAccountsBlockCodes:
+    address: private.spin.core.accounts.blockcodes.applied
+    description: Channel for receiving account block and unblock operations from providers
+    messages:
+      providerAccountBlocked:
+        $ref: '#/components/messages/providerAccountBlocked'
+      providerAccountUnblocked:
+        $ref: '#/components/messages/providerAccountUnblocked'
+  providerAccountsBlockCodesDlt:
+    address: private.spin.core.accounts.blockcodes.applied.ffss-account-aggregation-service.dlt
+    description: Dead letter topic channel for account block and unblock operations that failed processing
+    messages:
+      providerAccountBlocked:
+        $ref: '#/components/messages/providerAccountBlocked'
+      providerAccountUnblocked:
+        $ref: '#/components/messages/providerAccountUnblocked'
+
+operations:
+  receiveProviderAccountBlocked:
+    action: receive
+    channel:
+      $ref: '#/channels/providerAccountsBlockCodes'
+    messages:
+      - $ref: '#/channels/providerAccountsBlockCodes/messages/providerAccountBlocked'
+    description: Synchronize an account block operation performed by provider
+
+  receiveProviderAccountUnblocked:
+    action: receive
+    channel:
+      $ref: '#/channels/providerAccountsBlockCodes'
+    messages:
+      - $ref: '#/channels/providerAccountsBlockCodes/messages/providerAccountUnblocked'
+    description: Synchronize an account unblock operation performed by provider
+
+  receiveProviderAccountBlockedDlt:
+    action: receive
+    channel:
+      $ref: '#/channels/providerAccountsBlockCodesDlt'
+    messages:
+      - $ref: '#/channels/providerAccountsBlockCodesDlt/messages/providerAccountBlocked'
+    description: Synchronize an account block operation performed by provider
+
+  receiveProviderAccountUnblockedDlt:
+    action: receive
+    channel:
+      $ref: '#/channels/providerAccountsBlockCodesDlt'
+    messages:
+      - $ref: '#/channels/providerAccountsBlockCodesDlt/messages/providerAccountUnblocked'
+    description: Synchronize an account unblock operation performed by provider
+
+  sendProviderAccountBlockedDlt:
+    action: send
+    channel:
+      $ref: '#/channels/providerAccountsBlockCodesDlt'
+    messages:
+      - $ref: '#/channels/providerAccountsBlockCodesDlt/messages/providerAccountBlocked'
+    description: Synchronize an account block operation performed by provider through dead letter topic
+
+  sendProviderCardUnblockedDlt:
+    action: send
+    channel:
+      $ref: '#/channels/providerAccountsBlockCodesDlt'
+    messages:
+      - $ref: '#/channels/providerAccountsBlockCodesDlt/messages/providerAccountUnblocked'
+    description: Synchronize an account unblock operation performed by provider through dead letter topic
+
+components:
+  messages:
+    providerAccountBlocked:
+      name: ProviderAccountBlockedMessage
+      title: Provider Account Blocked Message
+      description: Message containing information about an account that has been blocked by a provider, including account details, customer information, and block code
+      summary: >-
+        Information about a blocked account.
+      contentType: application/json
+      headers:
+        type: object
+        properties:
+          eventType:
+            type: string
+            const: ProviderAccountBlocked
+          timestamp:
+            type: number
+      traits:
+        - $ref: '#/components/messageTraits/commonHeaders'
+      payload:
+        $ref: '#/components/schemas/providerAccountBlocked'
+    providerAccountUnblocked:
+      name: ProviderAccountUnblockedMessage
+      title: Provider Account Unblocked Message
+      description: Message containing information about an account that has been unblocked by a provider, including account details and customer information
+      summary: >-
+        Information about an unblocked account.
+      contentType: application/json
+      headers:
+        type: object
+        properties:
+          eventType:
+            type: string
+            const: ProviderAccountUnblocked
+          timestamp:
+            type: number
+      traits:
+        - $ref: '#/components/messageTraits/commonHeaders'
+      payload:
+        $ref: '#/components/schemas/providerAccountUnblocked'
+  schemas:
+    providerAccountBlocked:
+      type: object
+      description: Base message type for blocked account operations
+      properties:
+        organizationNumber:
+          type: string
+          description: Organization number
+        accountNumber:
+          type: string
+          description: Account number
+        customerNumber:
+          type: string
+          description: Customer number
+        customerData2:
+          type: string
+          description: Additional customer data
+        customerPhone:
+          type: string
+          description: Customer phone number
+        customerEmail:
+          type: string
+          description: Customer email address
+        cardNumber:
+          type: string
+          description: Card number
+        description:
+          type: string
+          description: Description of the block action
+        blockCode:
+          type: string
+          description: Block code
+        authorizationDate:
+          type: string
+          description: Date of authorization
+        authorizationTime:
+          type: string
+          description: Time of authorization
+    providerAccountUnblocked:
+      type: object
+      description: Base message type for unblocked card operations
+      properties:
+        organizationNumber:
+          type: string
+          description: Organization number
+        accountNumber:
+          type: string
+          description: Account number
+        customerNumber:
+          type: string
+          description: Customer number
+        customerData2:
+          type: string
+          description: Additional customer data
+        customerPhone:
+          type: string
+          description: Customer phone number
+        customerEmail:
+          type: string
+          description: Customer email address
+        cardNumber:
+          type: string
+          description: Card number
+        description:
+          type: string
+          description: Description of the unblock action
+        authorizationDate:
+          type: string
+          description: Date of authorization
+        authorizationTime:
+          type: string
+          description: Time of authorization
+  securitySchemes:
+    saslScram:
+      type: scramSha256
+      description: Provide your username and password for SASL/SCRAM
+    certs:
+      type: X509
+      description: Download the certificate files from service provider
+  messageTraits:
+    commonHeaders:
+      headers:
+        type: object
+        properties:
+          eventType:
+            type: string
+          timestamp:
+            type: number

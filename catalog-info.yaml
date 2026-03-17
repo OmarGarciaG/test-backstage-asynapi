@@ -1,0 +1,45 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: test-ogg
+  description: "tr-spin-ffss-acc-aggreg-svc-backend-java-kubernetes \n"
+  tags:
+    - java-gradle
+  links:
+    - title: Code Repository
+      url: https://github.com/fintechdigitalventure/tr-spin-ffss-acc-aggreg-svc-backend-java
+    - title: Kubernetes Repository
+      url: https://github.com/fintechdigitalventure/tr-spin-ffss-acc-aggreg-svc-backend-java-kubernetes
+    #- title: Apigee - Health
+    #  url: https://dev.api.spinplatform.digital/tr/superback/checkout/v1/health
+    - title: AWS ALB - Health
+      url: https://dev-gen.internal.api.oxxofintech.com.mx/ffss-account-aggregation-service/actuator/health
+  annotations:
+    github.com/project-slug: fintechdigitalventure/tr-spin-ffss-acc-aggreg-svc-backend-java
+    backstage.io/techdocs-ref: dir:.
+    lighthouse.com/website-url: https://backstage.io
+    sonarqube.org/project-key: fintechdigitalventure_tr-spin-ffss-acc-aggreg-svc-backend-java
+    backstage.io/code-coverage: scm-only
+    backstage.io/kubernetes-id: dice-roller
+    snyk.io/org-id: 7f5a5f84-8619-47b1-92e2-cbc67a902765 # Id de la ORG
+    snyk.io/targets: fintechdigitalventure/tr-spin-ffss-acc-aggreg-svc-backend-java,fintechdigitalventure_tr-spin-ffss-acc-aggreg-svc-backend-java #Id del proyecto (SAST y SCA) separados por comas
+    backstage.io/tbd-enable: "true"
+    backstage.io/null-platform: "false"
+spec:
+  type: service
+  owner: fintechdigitalventure/b2c-finserv-squad-hades
+  system: spin_oxxo_pos_retiros_con_qr
+  lifecycle: production
+  providesApis:
+    - tr-spin-ffss-acc-aggreg-svc-backend-java-kubernetes-asyncapi
+    - tr-spin-ffss-acc-aggreg-svc-backend-java-kubernetes-openapi
+# 3er bloque
+---
+apiVersion: backstage.io/v1alpha1
+kind: Location
+metadata:
+  name: spin-ffss-account-aggregation-servie-location
+spec:
+  targets:
+    - ./schemas/backstage/kind-api-asyncapi.yaml
+    - ./schemas/backstage/kind-api-openapi.yaml
