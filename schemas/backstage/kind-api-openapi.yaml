@@ -1,0 +1,10 @@
+apiVersion: backstage.io/v1alpha1
+kind: API
+metadata:
+  name: test-ogg-openapi
+spec:
+  type: openapi
+  lifecycle: production
+  owner: fintechdigitalventure/b2c-finserv-squad-hades
+  definition:
+    $text: ../openapi/openapi.json
